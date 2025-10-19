@@ -10,7 +10,7 @@ class TorchModel(nn.Module):
         super(TorchModel, self).__init__()
         self.linear = nn.Linear(input_size, 5)  # 输出5个类别
         self.loss = nn.functional.cross_entropy  # 使用交叉熵损失
-
+    # 正向传播
     def forward(self, x, y=None):
         x = self.linear(x)
         if y is not None:
@@ -20,20 +20,18 @@ class TorchModel(nn.Module):
 
 
 def build_sample():
-    """生成一个样本：5维随机向量，标签为最大值的索引"""
     x = np.random.random(5)  # 生成5维随机向量
-    label = np.argmax(x)  # 获取最大值的索引 (0-4)
+    label = np.argmax(x)  # 获取最大值的索引
     return x, label
 
-
+# 构建测试数据
 def build_dataset(total_sample_num):
-    """构建数据集：输入5维向量，标签为最大值索引(0-4)"""
     X = []
     Y = []
     for i in range(total_sample_num):
         x, y = build_sample()
         X.append(x)
-        Y.append(y)  # 直接存储索引 (0-4)
+        Y.append(y)  # 直接存储索引
 
     # 转换为Tensor
     return torch.FloatTensor(X), torch.LongTensor(Y)
@@ -42,9 +40,10 @@ def build_dataset(total_sample_num):
 def evaluate(model):
     """评估模型性能"""
     model.eval()
-    test_sample_num = 100
+    test_sample_num = 2
     x, y = build_dataset(test_sample_num)
-
+    print('x',x)
+    print('y',y)
     correct, wrong = 0, 0
     with torch.no_grad():
         y_pred = model(x)
@@ -64,7 +63,7 @@ def evaluate(model):
 
 
 def main():
-    epoch_num = 200  # 增加训练轮数
+    epoch_num = 20  # 增加训练轮数
     batch_size = 20
     train_sample = 10000
     input_size = 5
@@ -121,19 +120,19 @@ def predict(model_path, input_vec):
 
     with torch.no_grad():
         result = model(torch.FloatTensor(input_vec))
-        # 获取预测的类别 (argmax)
+        # 预测最大索引 (argmax)
         pred = result.argmax(dim=1)
 
         # 打印预测结果
         for i, vec in enumerate(input_vec):
-            print(f"输入：{vec}, 预测类别：{pred[i].item()}, 概率分布：{result[i].detach().numpy()}")
+            print(f"输入：{vec}, 预测最大索引：{pred[i].item()}, 概率分布：{result[i].detach().numpy()}")
 
     return pred
 
 
 if __name__ == '__main__':
-    main()
-    # 测试预测
+     main()
+    #测试预测
     # test_vec = [
     #     [0.07889086, 0.15229675, 0.31082123, 0.03504317, 0.88920843],
     #     [0.74963533, 0.5524256, 0.95758807, 0.95520434, 0.84890681],
