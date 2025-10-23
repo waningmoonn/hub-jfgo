@@ -101,7 +101,7 @@ def main():
     # torch.save(model.state_dict(), './model.pt')
     plt.plot(range(len(log)), [l[0] for l in log], label='acc')
     plt.plot(range(len(log)), [l[1] for l in log], label='loss')
-    plt.show()
+    plt.legend()
     plt.savefig('acc_loss.png')
     return
 
