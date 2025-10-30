@@ -186,7 +186,7 @@ def predict(model_path, vocab_path, input_strings):
     for i, input_string in enumerate(input_strings):
         print("输入：%s, 首次出现位置：%d" % (input_string, result_pos[i])) #打印结果
 
-
+ 
 
 if __name__ == "__main__":
     main()
