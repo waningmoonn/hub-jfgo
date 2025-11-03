@@ -43,7 +43,8 @@ class TorchModel(nn.Module):
             return self.loss(y_pred, y)  # 预测值和真实值计算损失
         else:
             probs = F.softmax(y_pred, dim=1)
-            return probs.argmax(dim=1)  # 输出预测结果
+            return probs
+            # return probs.argmax(dim=1)  # 输出预测结果
 
 
 # 生成一个样本, 样本的生成方法，代表了我们要学习的规律
@@ -72,13 +73,13 @@ def evaluate(model):
     model.eval()
     test_sample_num = 10
     x, y = build_dataset(test_sample_num)
-    print("本次预测集中共有%d个正样本，%d个负样本" % (sum(y), test_sample_num - sum(y)))
+    # print("本次预测集中共有%d个正样本，%d个负样本" % (sum(y), test_sample_num - sum(y)))
     correct, wrong = 0, 0
     with torch.no_grad():
         y_pred = model(x)  # 模型预测 model.forward(x)
         for y_p, y_t in zip(y_pred, y):  # 与真实标签进行对比
-            if y_p.argmax().item() == y_t.item():
-                correct += 1  # 负样本判断正确
+            if y_p.argmax() == y_t:
+                correct += 1
             else:
                 wrong += 1
     print("正确预测个数：%d, 正确率：%f" % (correct, correct / (correct + wrong)))
@@ -143,7 +144,7 @@ def predict(model_path, input_vec):
     with torch.no_grad():  # 不计算梯度
         result = model.forward(torch.FloatTensor(input_vec))  # 模型预测
     for vec, res in zip(input_vec, result):
-        print("输入：%s, 预测类别：%d" % (vec, res.item()))  # 打印结果
+        print("输入：%s, 预测类别：%d" % (vec, res.argmax().item()))  # 打印结果
 
 
 if __name__ == "__main__":
