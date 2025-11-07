@@ -116,7 +116,7 @@ if __name__=="__main__":
 
     train_data=SampleDataset(train_num_samples=10000,nun_vector=5)
 
-    dataloader = DataLoader(
+    train_dataloader = DataLoader(
         train_data,
         batch_size=100,
         shuffle=True,
@@ -124,7 +124,7 @@ if __name__=="__main__":
         pin_memory=True  # 加速GPU传输数据
     )
     model_path="./model.pth"
-    train_model_process(model,dataloader,20,model_path)
+    train_model_process(model,train_dataloader,20,model_path)
 
     print("="*10+"predict"+"="*10)
 
