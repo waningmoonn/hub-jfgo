@@ -40,6 +40,37 @@ class SampleDataset(Dataset):
         return torch.from_numpy(x),y
 
 
+class MyDataset(Dataset):
+    def __init__(self,num_samples,input_dim,num_classes):
+        """
+            num_samples: 样本数量
+            input_dim: 输入维度
+            num_classes: 类别数量
+        """
+        self.num_samples=num_samples
+        self.input_dim = input_dim
+        self.num_classes = num_classes
+
+        self.data=np.random.randn(num_samples,input_dim).astype('float32')
+        self.labels=np.random.randint(0,num_classes,size=num_samples).astype('int32')
+
+        # 转换张量
+        self.data=torch.tensor(self.data,dtype=torch.float32)
+        self.labels=torch.tensor(self.labels,dtype=torch.long)
+
+        # self.data=torch.from_numpy(self.data)
+        # self.labels=torch.from_numpy(self.labels)
+
+    def __len__(self):
+        return self.num_samples
+
+    def __getitem__(self, idx):
+        return self.data[idx],self.labels[idx]
+
+
+
+
+
 
 def train_model_process(model,train_dataloader,num_epochs,model_path):
     # 设定训练设备
