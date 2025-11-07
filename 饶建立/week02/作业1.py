@@ -26,9 +26,9 @@ class Torchmodel(nn.Module):
 
 # 随机生成训练样本，构造数据
 class SampleDataset(Dataset):
-    def __init__(self,train_num_samples,nun_vector):
+    def __init__(self,num_samples,nun_vector):
         self.nun_vector = nun_vector
-        self.num_samples=train_num_samples
+        self.num_samples=num_samples
 
 
     def __len__(self):
@@ -65,7 +65,7 @@ def train_model_process(model,train_dataloader,num_epochs,model_path):
             y_pre,loss=model(b_x,b_y)
             pre_label=torch.argmax(y_pre,dim=1)
 
-            # 反向传播，梯度更新，清空梯度
+            # 反向传播计算梯度，参数更新，清空梯度（不清空会累加）
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
@@ -114,7 +114,7 @@ if __name__=="__main__":
 
     model=Torchmodel(5,5)
 
-    train_data=SampleDataset(train_num_samples=10000,nun_vector=5)
+    train_data=SampleDataset(num_samples=10000,nun_vector=5)
 
     train_dataloader = DataLoader(
         train_data,
@@ -128,7 +128,8 @@ if __name__=="__main__":
 
     print("="*10+"predict"+"="*10)
 
-    test_data = SampleDataset(train_num_samples=10000, nun_vector=5)
+    test_data = SampleDataset(num_samples=10000, nun_vector=5)
+
     test_dataloader = DataLoader(
         test_data,
         batch_size=100,
