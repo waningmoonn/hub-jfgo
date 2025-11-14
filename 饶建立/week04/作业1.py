@@ -38,8 +38,6 @@ def all_cut1(sentence,Dict):
 
 
 
-
-
 result=all_cut1(sentence,Dict)
 print(result)
 print(len(result))
