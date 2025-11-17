@@ -1,88 +1,71 @@
-#!/usr/bin/env python3
-#coding: utf-8
-
-#基于训练好的词向量模型进行聚类
-#聚类采用Kmeans算法
 import math
-import re
-import json
 import jieba
 import numpy as np
 from gensim.models import Word2Vec
 from sklearn.cluster import KMeans
 from collections import defaultdict
 
-#输入模型文件路径
-#加载训练好的模型
-def load_word2vec_model(path):
+
+# 加载已训练好的模型
+def load_word2vec_mode(path):
     model = Word2Vec.load(path)
     return model
 
+
 def load_sentence(path):
     sentences = set()
-    with open(path, encoding="utf8") as f:
+    with open(path, encoding='utf-8') as f:
         for line in f:
             sentence = line.strip()
-            sentences.add(" ".join(jieba.cut(sentence)))
-    print("获取句子数量：", len(sentences))
+            sentences.add(' '.join(jieba.lcut(sentence)))
+    print(f'句子数量： {len(sentences)}')
     return sentences
 
-#将文本向量化
-def sentences_to_vectors(sentences, model):
+
+# 将文本向量化
+def sentence_to_vectors(sentences, model):
     vectors = []
     for sentence in sentences:
-        words = sentence.split()  #sentence是分好词的，空格分开
+        words = sentence.split()
         vector = np.zeros(model.vector_size)
-        #所有词的向量相加求平均，作为句子向量
         for word in words:
             try:
                 vector += model.wv[word]
             except KeyError:
-                #部分词在训练中未出现，用全0向量代替
                 vector += np.zeros(model.vector_size)
         vectors.append(vector / len(words))
     return np.array(vectors)
 
 
 def main():
-    model = load_word2vec_model(r"../model.w2v") #加载词向量模型
-    input(model)
-    sentences = load_sentence("../titles.txt")  #加载所有标题
-    vectors = sentences_to_vectors(sentences, model)   #将所有标题向量化
-
-    n_clusters = int(math.sqrt(len(sentences)))  #指定聚类数量
-    print("指定聚类数量：", n_clusters)
-    kmeans = KMeans(n_clusters)  #定义一个kmeans计算类
-    kmeans.fit(vectors)          #进行聚类计算
+    model = load_word2vec_mode('../model.w2v')
+    sentences = load_sentence('../titles.txt')
+    vectors = sentence_to_vectors(sentences, model)  # 标题向量化
+    n_clusters = int(math.sqrt(len(sentences)))  # 指定聚类数量
+    print(f'指定聚类数量： {n_clusters}')
+    kmeans = KMeans(n_clusters)
+    kmeans.fit(vectors)  # 进行聚类计算
+    centers = kmeans.cluster_centers_  # 聚类中心
+    distance = []
+    for vec, label in zip(vectors, kmeans.labels_):
+        center = centers[label]
+        dist = np.sqrt(np.sum((vec - center) ** 2))
+        distance.append(dist)
 
     sentence_label_dict = defaultdict(list)
-    cluster_vectors = defaultdict(list)
-    for sentence, vec, label in zip(sentences, vectors, kmeans.labels_):  #取出句子和标签
-        #kmeans.cluester_centers_ #每个聚类中心
-        sentence_label_dict[label].append(sentence)         #同标签的放到一起
-        cluster_vectors[label].append(vec)
+    for sentence, label, dist in zip(sentences, kmeans.labels_, distance):  # 取出句子和标签
+        sentence_label_dict[label].append((sentence, dist))
+    # 类内排序
+    for label, sentence in sentence_label_dict.items():  # 同标签放在一起
+        print(f'cluster 类内排序 :{label})')
+        sentence_sorted = sorted(sentence, key=lambda x: x[1])
+        # input(sentence_sorted)
+        for sentence_i, dist in sentence_sorted[:10]:
+            print(f'{sentence_i.replace(" ", "")}, --> dist: {dist:4f}')
+        print('-' * 30)
 
-    for label, sent_list in sentence_label_dict.items():
-        center = kmeans.cluster_centers_[label]
 
-        # 计算类内距离并排序
-        dist_sent_list = []
-        for sentence, vec in zip(sent_list, cluster_vectors[label]):
-            dist = np.linalg.norm(vec - center)  # 计算欧式距离
-            dist_sent_list.append((sentence, dist))
-
-        # 距离越小越接近中心，排序
-        dist_sent_list.sort(key=lambda x: x[1])
-
-        # 替换为排序后的句子列表（只保留句子）
-        sentence_label_dict[label] = [s for s, d in dist_sent_list]
-
-    for label, sentences in sentence_label_dict.items():
-        print("cluster %s :" % label)
-        for i in range(min(10, len(sentences))):  #随便打印几个，太多了看不过来
-            print(sentences[i].replace(" ", ""))
-        print("---------")
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
+
 
